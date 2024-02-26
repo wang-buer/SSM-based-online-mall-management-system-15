@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<!-- 加载配置文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- 数据库连接池 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		  destroy-method="close">
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="1"/>
+		<property name="maxActive" value="5"/>
+		<property name="minIdle" value="1"/>
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="60000"/>
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat"/>
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000"/>
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000"/>
+	</bean>
+
+	<!-- 让spring管理sqlsessionfactory 使用mybatis和spring整合包中的 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 数据库连接池 -->
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 加载mybatis的全局配置文件 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.lianwei.lssg.dao"/>
+	</bean>
+	<!-- 注册事务管理类 -->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+    <!-- 配置文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="5242880"/>
+    </bean>
+
+	<!-- 开启事务行为 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+
+    <context:component-scan base-package="com.lianwei.lssg.service"/>
+
+	<!-- aop -->
+	<aop:aspectj-autoproxy/>
+
+
+    <!-- shiro start -->
+    <!-- 1. 配置SecurityManager  安全管理器(它管理着所有 Subject、且负责进行认证、授权、会话及缓存的管理)-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="cacheManager" ref="cacheManager" /> <!--缓存控制器，来管理如用户、角色、权限等的缓存的-->
+        <property name="authenticator" ref="authenticator"/> <!--负责 Subject 认证-->
+        <!-- 可以配置多个Realm，其实会把realms属性赋值给ModularRealmAuthenticator的realms属性 -->
+        <property name="realms">
+            <list>
+                <ref bean="lssgUserLoginRealm" />
+            </list>
+        </property>
+        <!-- 注入session管理器 -->
+        <property name="sessionManager" ref="sessionManager" />
+        <!-- 记住我 -->
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+
+    </bean>
+
+    <!-- 2. 配置CacheManager -->
+    <!-- 2.1 需要加入ehcache的jar包及配置文件 -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManagerConfigFile" value="classpath:ehcache.xml" />
+    </bean>
+
+    <!-- 3. 配置Realm   可以有 1 个或多个 Realm，可以认为是安全实体数据源，即用于获取安全实体的-->
+    <!-- 3.1 直接配置继承了org.apache.shiro.realm.AuthorizingRealm的bean -->
+    <bean id="lssgUserLoginRealm" class="com.lianwei.lssg.realm.LssgUserLoginRealm">
+        <!-- 配置密码匹配器 -->
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <!-- 加密算法为MD5 -->
+                <property name="hashAlgorithmName" value="MD5"/>
+                <!-- 加密次数 -->
+                <property name="hashIterations" value="1024"/>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- 4. 配置LifecycleBeanPostProcessor，可以自定义地来调用配置在Spring IOC容器中shiro bean的生命周期方法 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+    <!-- 5. 使能够在IOC容器中使用shiro的注解，但必须在配置了LifecycleBeanPostProcessor之后才可以使用 -->
+    <bean
+            class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+            depends-on="lifecycleBeanPostProcessor" />
+    <bean
+            class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager" />
+    </bean>
+
+    <!-- 6. 配置ShiroFilter -->
+    <!-- 6.1 id必须和web.xml中配置的DelegatingFilterProxy的<filter-name>一致。 如果不一致，会抛出NoSuchBeanDefinitionException异常，因为shiro会在IOC容器中查找名称和<filter-name>
+        值一致的filter bean -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager" />
+        <property name="loginUrl" value="http://localhost:8080/beforePage/toLogin" />
+        <!--<property name="successUrl" value="toIndex" />-->
+        <property name="unauthorizedUrl" value="http://localhost:8080/beforePage/toLogin" />
+        <!--<property name="filters" >
+            <map>
+                <entry key="authc" value-ref="loginFilter"/>
+            </map>
+        </property>-->
+       <!-- <property name="filters">
+        <map>
+            <entry key="authc">
+                <bean class="com.lianwei.lssg.filter.CaptchaFormAuthenticationFilter"/>
+            </entry>
+        </map>
+    </property>-->
+        <!-- 配置哪些页面需要受保护，以及访问这些页面需要的权限 -->
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 第一次匹配优先的原则 -->
+                /beforePage/toLogin = anon
+                /beforePage/toRegist = anon
+                /userLoginInfo/login = anon
+                /logout = logout
+
+
+                /beforePage/toOrder = authc
+               <!-- /beforePage/toProductDetails = authc-->
+                /cart/addProductToCart = authc
+                /beforePage/toWishList = authc
+                /beforePage/toCart = authc
+                /beforePage/toMyAccount = authc
+                <!--/collect/findOneProductInCollect = authc-->
+
+                <!-- /** = authc-->
+            </value>
+        </property>
+    </bean>
+
+    <!-- 7. 配置ModularRealmAuthenticator，可以实现多Realm认证 -->
+    <bean id="authenticator" class="org.apache.shiro.authc.pam.ModularRealmAuthenticator">
+        <!-- 配置认证策略，只要有一个Realm认证成功即可，并且返回所有认证成功信息 -->
+        <property name="authenticationStrategy">
+            <bean class="org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy"/>
+        </property>
+    </bean>
+
+    <!--session保存登入认证成功的user信息-->
+    <!-- 自定义form认证过虑器 -->
+    <!-- 基于Form表单的身份验证过滤器，不配置将也会注册此过虑器，表单中的用户账号、密码及loginurl将采用默认值，建议配置 -->
+    <!--<bean id="filters" class="com.lianwei.lssg.filter.CaptchaFormAuthenticationFilter">
+        <property name="usernameParam" value="username" />
+        <property name="passwordParam" value="password" />
+        <property name="loginUrl" value="http://localhost:8080/userLoginInfo/login" />
+    </bean>-->
+    <!--监测session超时后的处理-->
+    <bean id="loginFilter" class="com.lianwei.lssg.filter.ShiroPermissionsFilter"/>
+
+    <!-- rememberMeManager管理器，写cookie，取出cookie生成用户信息 -->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cookie" ref="rememberMeCookie" />
+    </bean>
+    <!-- 记住我cookie -->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!-- rememberMe是cookie的名字 -->
+        <constructor-arg value="rememberMe" />
+        <!-- 记住我cookie生效时间30天 -->
+        <property name="maxAge" value="2592000" />
+    </bean>
+
+
+    <!-- 会话 ID 生成器 -->
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+
+    <!-- 会话 Cookie 模板 关闭浏览器立即失效 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="-1"/>
+    </bean>
+    <!-- 会话 DAO -->
+    <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+    </bean>
+
+    <!-- 会话验证调度器，每 30 分钟执行一次验证 ，设定会话超时及保存 -->
+    <bean name="sessionValidationScheduler" class="org.apache.shiro.session.mgt.ExecutorServiceSessionValidationScheduler">
+        <property name="interval" value="1800000"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <!-- 会话管理器 -->
+    <bean id="sessionManager"
+          class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!-- 全局会话超时时间（单位毫秒），默认 30 分钟 -->
+        <property name="globalSessionTimeout" value="1800000"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean>
+    <!-- shiro end -->
+
+</beans>

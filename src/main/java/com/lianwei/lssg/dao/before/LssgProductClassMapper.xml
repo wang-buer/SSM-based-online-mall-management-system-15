@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgProductClassMapper">
+  <resultMap id="LssgProductClassMap" type="com.lianwei.lssg.entity.LssgProductClass">
+    <id property="productClassId" column="product_class_id"/>
+    <result property="productClassName" column="product_class_name"/>
+    <result property="productIsShow" column="product_is_show"/>
+    <result property="productDescription" column="product_description"/>
+    <collection property="LssgProducts" javaType="ArrayList"
+                ofType="com.lianwei.lssg.entity.LssgProduct"
+                column="ProductId" select="com.lianwei.dao.before.LssgProductMapper.selectLssgProductByProductClassId"
+      fetchType="lazy">
+      <id column="product_id" property="productId" jdbcType="INTEGER" />
+      <result column="product_name" property="productCame" jdbcType="VARCHAR" />
+      <result column="product_up_time" property="productUpTime" jdbcType="DATE" />
+      <result column="product_down_time" property="productDownTime" jdbcType="TIMESTAMP" />
+      <result column="product_photo" property="productPhoto" jdbcType="VARCHAR" />
+      <result column="small_photo" property="smallPhoto" jdbcType="VARCHAR" />
+      <result column="big_photo" property="bigPhoto" jdbcType="VARCHAR" />
+      <result column="product_market_price" property="productMarketPrice" jdbcType="DECIMAL" />
+      <result column="product_mall_price" property="productMallPrice" jdbcType="DECIMAL" />
+      <result column="product_num" property="productNum" jdbcType="INTEGER" />
+      <result column="sold_num" property="soldNum" jdbcType="INTEGER" />
+      <result column="product_weight" property="productWeight" jdbcType="DECIMAL" />
+      <result column="promote_price" property="promotePrice" jdbcType="DECIMAL" />
+      <result column="promote_start_date" property="promoteStartDate" jdbcType="TIMESTAMP" />
+      <result column="promote_end_date" property="promoteEndDate" jdbcType="TIMESTAMP" />
+      <result column="fregiht" property="fregiht" jdbcType="DECIMAL" />
+      <result column="is_best" property="isBest" jdbcType="INTEGER" />
+      <result column="is_new" property="isNew" jdbcType="INTEGER" />
+      <result column="is_hot" property="isHot" jdbcType="INTEGER" />
+      <result column="is_special" property="isSpecial" jdbcType="INTEGER" />
+      <result column="is_state" property="isState" jdbcType="INTEGER" />
+      <result column="product_addr" property="productAddr" jdbcType="VARCHAR" />
+      <result column="product_notes" property="productNotes" jdbcType="VARCHAR" />
+    </collection>
+  </resultMap>
+
+  <!--根据id查找-->
+  <select id="selectByPrimaryKey" resultType="com.lianwei.lssg.entity.LssgProductClass" parameterType="java.lang.Integer" >
+        select * from lssg_product_class
+        where product_class_id=#{id}
+        and product_is_show = 0
+  </select>
+
+    <select id="findByAll" resultType="com.lianwei.lssg.entity.LssgProductClass" >
+        SELECT   *  from   lssg_product_class where product_is_show = 0
+    </select>
+
+    <select id="query" resultMap="LssgProductClassMap" parameterType="java.util.Map">
+        select * from lssg_product_class
+        <where>
+            <if test="query!=null">
+                concat(product_class_id,product_class_name) like  "%${query}%"
+            </if>
+        </where>
+        limit  #{start},#{nums};
+    </select>
+
+    <select id="querySize" resultType="int" parameterType="java.util.Map">
+        select count(*) from lssg_product_class
+        <where>
+            <if test="query!=null">
+                concat(product_class_id,product_class_name) like  "%${query}%"
+            </if>
+        </where>
+    </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.lianwei.lssg.entity.LssgProductClass" >
+        update lssg_product_class
+        <set >
+            <if test="productClassName != null" >
+                product_class_name = #{productClassName,jdbcType=VARCHAR},
+            </if>
+            <if test="productIsShow != null" >
+                product_is_show = #{productIsShow,jdbcType=INTEGER},
+            </if>
+            <if test="productDescription != null" >
+                product_description = #{productDescription,jdbcType=INTEGER},
+            </if>
+        </set>
+        where product_class_id = #{productClassId,jdbcType=INTEGER}
+    </update>
+
+    <insert id="insertSelective" parameterType="com.lianwei.lssg.entity.LssgProductClass" >
+        insert into lssg_product_class
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="productClassId != null" >
+                product_class_id,
+            </if>
+            <if test="productClassName!= null" >
+                product_class_name,
+            </if>
+            <if test="productIsShow != null" >
+                product_is_show,
+            </if>
+            <if test="productDescription != null" >
+                product_description,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="productClassId != null" >
+                #{productClassId,jdbcType=INTEGER},
+            </if>
+            <if test="productClassName != null" >
+                #{productClassName,jdbcType=INTEGER},
+            </if>
+            <if test="productIsShow != null" >
+                #{productIsShow,jdbcType=VARCHAR},
+            </if>
+            <if test="productDescription != null" >
+                #{productDescription,jdbcType=DATE},
+            </if>
+        </trim>
+    </insert>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from lssg_product_class
+    where product_class_id = #{productClassId,jdbcType=INTEGER}
+    </delete>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgOrderItemMapper">
+    <resultMap id="orderItemMap" type="com.lianwei.lssg.entity.LssgOrderItem">
+        <id property="orderItemId" column="order_item_id"/>
+        <result property="orderProductNum" column="order_product_num"/>
+        <result property="subtotalPrice" column="subtotal_price"/>
+        <result property="orderProductWeight" column="order_product_weight"/>
+        <result property="state" column="state"/>
+        <association property="lssgProduct" javaType="com.lianwei.lssg.entity.LssgProduct">
+            <id property="productId" column="product_id"/>
+            <result property="productName" column="product_name"/>
+            <result property="productPhoto" column="product_photo"/>
+            <result property="productMallPrice" column="product_mall_price"/>
+            <result property="productNum" column="product_num"/>
+        </association>
+        <association property="lssgOrders" javaType="com.lianwei.lssg.entity.LssgOrders">
+            <id property="orderId" column="order_id"/>
+            <result property="orderTotalPrice" column="order_total_price"/>
+            <result property="doOrderTime" column="do_order_time"/>
+            <result property="totalNum" column="total_num"/>
+            <result property="paymentName" column="payment_name"/>
+            <result property="notes" column="notes"/>
+        </association>
+    </resultMap>
+    <!--通过订单号查找所有的订单项-->
+    <select id="findAllOrderItemByOid" parameterType="String" resultMap="orderItemMap">
+        select t1.*,t2.*,t3.*
+        from lssg_order_item t1,lssg_product t2,lssg_orders t3
+        where t1.product_id = t2.product_id
+        and t3.order_id = t1.order_id
+        and t1.order_id = #{orderId}
+    </select>
+
+    <!--通过订单id、产品id查找商品信息-->
+    <select id="findAllOrderItemByOidAndPid" parameterType="map" resultMap="orderItemMap">
+        select t1.*,t2.*,t3.*
+        from lssg_order_item t1,lssg_product t2,lssg_orders t3
+        where t1.product_id = t2.product_id
+        and t1.product_id = #{productId}
+        and t3.order_id = t1.order_id
+        and t1.order_id = #{orderId}
+    </select>
+
+    <!--删除一个订单项信息-->
+    <update id="delOneOrderItem" parameterType="String">
+        update lssg_order_item
+        set state = 1
+        where order_id = #{orderId}
+    </update>
+</mapper>
+
+
+

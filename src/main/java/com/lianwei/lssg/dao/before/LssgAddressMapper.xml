@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgAddressMapper">
+    <resultMap id="addressMap" type="com.lianwei.lssg.entity.LssgAddress">
+        <id property="addressId" column="address_id"/>
+        <result property="addressUserName" column="address_user_name"/>
+        <result property="addressName" column="address_name"/>
+        <result property="addressAddr" column="address_addr"/>
+        <result property="addressState" column="address_state"/>
+        <result property="addressTel" column="address_tel"/>
+        <result property="addressContent" column="address_content"/>
+        <association property="lssgUserLogin" javaType="com.lianwei.lssg.entity.LssgUserLogin">
+            <id property="userId" column="user_id"/>
+            <result property="userName" column="user_name"/>
+            <result property="userPwd" column="user_pwd"/>
+            <result property="loginIsActive" column="login_is_active"/>
+            <result property="registTime" column="regist_time"/>
+            <result property="lastTime" column="last_time"/>
+            <result property="userState" column="user_state"/>
+        </association>
+    </resultMap>
+    <!--新增收货地址-->
+    <insert id="addOneAddress" parameterType="com.lianwei.lssg.entity.LssgAddress">
+        insert into lssg_address
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="addressId != null" >
+                address_id,
+            </if>
+            <if test="lssgUserLogin != null">
+                <if test="lssgUserLogin.userId != null" >
+                    user_id,
+                </if>
+            </if>
+
+            <if test="addressUserName != null" >
+                address_user_name,
+            </if>
+            <if test="addressName != null" >
+                address_name,
+            </if>
+            <if test="addressAddr != null" >
+                address_addr,
+            </if>
+            <if test="addressState != null" >
+                address_state,
+            </if>
+            <if test="addressTel != null" >
+                address_tel,
+            </if>
+            <if test="addressContent != null" >
+                address_content,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="addressId != null" >
+                #{addressId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgUserLogin != null">
+                <if test="lssgUserLogin.userId != null" >
+                    #{lssgUserLogin.userId,jdbcType=INTEGER},
+                </if>
+            </if>
+
+            <if test="addressUserName != null" >
+                #{addressUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="addressName != null" >
+                #{addressName,jdbcType=VARCHAR},
+            </if>
+            <if test="addressAddr != null" >
+                #{addressAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="addressState != null" >
+                #{addressState,jdbcType=INTEGER},
+            </if>
+            <if test="addressTel != null" >
+                #{addressTel,jdbcType=VARCHAR},
+            </if>
+            <if test="addressContent != null" >
+                #{addressContent,jdbcType=VARCHAR},
+            </if>
+
+        </trim>
+    </insert>
+
+    <!--根据用户ID查找所有的地址 -->
+    <select id="selectAllAddressByUserId" parameterType="INTEGER" resultMap="addressMap">
+        select *
+        from lssg_address
+        where user_id = #{userId}
+        and address_state = 0
+        order by address_id desc
+        limit 0,4
+    </select>
+    <!--根据ID查找相应的地址-->
+    <select id="selectOneAddressById" parameterType="INTEGER" resultMap="addressMap">
+        select t1.*,t2.*
+        from lssg_address t1,lssg_user_login t2
+        where t1.address_id = #{addressId}
+        and t1.user_id = t2.user_id
+    </select>
+    <!--根据ID修改一条地址信息-->
+    <update id="updateOneAddressById" parameterType="com.lianwei.lssg.entity.LssgAddress">
+        update lssg_address
+        <set >
+            <if test="addressUserName != null" >
+                address_user_name = #{addressUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="addressName != null" >
+                address_name = #{addressName,jdbcType=VARCHAR},
+            </if>
+            <if test="addressAddr != null" >
+                address_addr = #{addressAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="addressTel != null" >
+                address_tel = #{addressTel,jdbcType=VARCHAR},
+            </if>
+
+            <if test="addressContent != null" >
+                address_content = #{addressContent,jdbcType=VARCHAR},
+            </if>
+
+        </set>
+        where address_id = #{addressId}
+    </update>
+    <!--根据ID软删除一条地址信息-->
+    <update id="delOneAddressById" parameterType="INTEGER">
+        update lssg_address
+        <set >
+                address_state = 1,
+        </set>
+        where address_id = #{addressId}
+    </update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

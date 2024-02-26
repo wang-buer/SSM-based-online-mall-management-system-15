@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.admin.LssgPublicClassMapper">
+    <!--新增一条公告类别信息-->
+    <insert id="addOnePublicClass" parameterType="com.lianwei.lssg.entity.LssgPublicClass">
+        insert into lssg_public_class
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="publicClassId != null" >
+                public_class_id,
+            </if>
+            <if test="publicClassName != null" >
+                public_class_name,
+            </if>
+            <if test="publicClassState != null" >
+                public_class_state,
+            </if>
+            <if test="publicDescription != null" >
+                public_description,
+            </if>
+            <if test="publicClassLocation != null" >
+                public_class_location,
+            </if>
+            <if test="publicClassImg != null" >
+                public_class_img,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="publicClassId != null" >
+                #{publicClassId,jdbcType=INTEGER},
+            </if>
+            <if test="publicClassName != null" >
+                #{publicClassName,jdbcType=VARCHAR},
+            </if>
+            <if test="publicClassState != null" >
+                #{publicClassState,jdbcType=INTEGER},
+            </if>
+            <if test="publicDescription != null" >
+                #{publicDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="publicClassLocation != null" >
+                #{publicClassLocation,jdbcType=INTEGER},
+            </if>
+            <if test="publicClassImg != null" >
+                #{publicClassImg,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <!--启用、禁用公告类别信息-->
+    <update id="delOnePublicClass" parameterType="map">
+        update lssg_public_class
+        set public_class_state = #{classState}
+        where public_class_id = #{publicClassId}
+    </update>
+
+    <!--删除一条公告类别信息-->
+    <delete id="delOnePublicClassById" parameterType="INTEGER">
+        delete  from lssg_public_class
+        where public_class_id = #{publicClassId}
+    </delete>
+
+    <!--批量删除-->
+    <delete id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        delete  from lssg_public_class
+        where public_class_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <!--查询所有的-->
+    <select id="findAllPublicClass" parameterType="map" resultType="com.lianwei.lssg.entity.LssgPublicClass">
+        select *
+        from lssg_public_class
+        <where>
+            <if test="publicClassName != null and publicClassName != ''">
+                public_class_name =#{publicClassName}
+            </if>
+        </where>
+        limit #{start},#{nums}
+    </select>
+    <!---->
+    <select id="querySize" resultType="int" parameterType="map">
+         select count(*)
+        from lssg_public_class
+        <where>
+            <if test="publicClassName != null and publicClassName != ''">
+                public_class_name =#{publicClassName}
+            </if>
+        </where>
+
+
+    </select>
+
+    <!---->
+    <select id="selectAllPublicClass" resultType="com.lianwei.lssg.entity.LssgPublicClass">
+        select *
+        from lssg_public_class
+        where public_class_state = 0
+    </select>
+
+    <!---->
+    <select id="selectAllPublicClassByLocation" parameterType="int" resultType="com.lianwei.lssg.entity.LssgPublicClass">
+        select *
+        from lssg_public_class
+        where public_class_state = 0
+        and public_class_location = #{locationId}
+    </select>
+</mapper>

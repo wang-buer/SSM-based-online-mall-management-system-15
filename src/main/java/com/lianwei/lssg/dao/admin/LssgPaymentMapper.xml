@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.admin.LssgPaymentMapper">
+    <resultMap id="paymentMap" type="com.lianwei.lssg.entity.LssgPayment">
+        <id property="paymentId" column="payment_id"/>
+        <result property="paymentName" column="payment_name"/>
+        <result property="paymentState" column="payment_state"/>
+        <result property="paymentImg" column="payment_img"/>
+    </resultMap>
+    <!--新增支付方式-->
+    <insert id="addOnePayment" parameterType="com.lianwei.lssg.entity.LssgPayment">
+        insert into lssg_payment
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="paymentId != null" >
+                payment_id,
+            </if>
+            <if test="paymentName != null" >
+                payment_name,
+            </if>
+            <if test="paymentState != null" >
+                payment_state,
+            </if>
+            <if test="paymentImg != null" >
+                payment_img,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="paymentId != null" >
+                #{paymentId,jdbcType=INTEGER},
+            </if>
+            <if test="paymentName != null" >
+                #{paymentName,jdbcType=VARCHAR},
+            </if>
+            <if test="paymentState != null" >
+                #{paymentState,jdbcType=INTEGER},
+            </if>
+            <if test="paymentImg != null" >
+                #{paymentImg,jdbcType=VARCHAR},
+            </if>
+
+        </trim>
+    </insert>
+
+    <!--查询全部-->
+    <select id="findAllPayment" resultMap="paymentMap">
+        select *
+        from lssg_payment
+        where payment_state = 0;
+    </select>
+    <!--删除一个支付方式-->
+    <delete id="delOnePayment" parameterType="INTEGER">
+        delete  from lssg_payment
+        where payment_id = #{paymentId}
+    </delete>
+
+    <!--批量删除-->
+    <delete id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        delete  from lssg_payment
+        where payment_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <!--查询出所有支付方式信息-->
+    <select id="findAllPaymentWithPage" resultMap="paymentMap" parameterType="map">
+        select *
+        from lssg_payment
+        <where>
+            <if test="paymentName != null and paymentName != ''">
+                payment_name =#{paymentName}
+            </if>
+        </where>
+        limit #{start},#{nums}
+    </select>
+
+    <!--查询满足条件总条数据-->
+    <select id="querySize" resultType="int" parameterType="map">
+        select count(*)
+        from lssg_payment
+        <where>
+            <if test="paymentName != null and paymentName != ''">
+                payment_name =#{paymentName}
+            </if>
+        </where>
+    </select>
+
+    <!--根据id查询-->
+    <select id="selectOneById" parameterType="INTEGER" resultMap="paymentMap">
+        select *
+        from lssg_payment
+        where payment_id = #{paymentId}
+    </select>
+    <!--更新-->
+    <update id="updateOnePayment" parameterType="com.lianwei.lssg.entity.LssgPayment">
+       update lssg_payment
+       <set>
+           <if test="paymentName !=null and paymentName !=''">
+               payment_name = #{paymentName},
+           </if>
+           <if test="paymentState !=null">
+             payment_state = #{paymentState},
+           </if>
+           <if test="paymentImg !=null and paymentImg !=''">
+             payment_img = #{paymentImg}
+           </if>
+       </set>
+        where payment_id = #{paymentId}
+    </update>
+
+    <update id="changeOnePayment" parameterType="com.lianwei.lssg.entity.LssgPayment">
+        update lssg_payment
+         set payment_state = #{paymentState,jdbcType=INTEGER}
+        where payment_id = #{paymentId}
+    </update>
+
+
+</mapper>
+
+

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgUserLoginMapper">
+    <resultMap id="lssgUserLoginMap" type="com.lianwei.lssg.entity.LssgUserLogin">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPwd" column="user_pwd"/>
+        <result property="loginIsActive" column="login_is_active"/>
+        <result property="registTime" column="regist_time"/>
+        <result property="lastTime" column="last_time"/>
+        <result property="userState" column="user_state"/>
+    </resultMap>
+
+    <!--根据用户名查找-->
+    <select id="selectUserLoginInfoByUserName" resultMap="lssgUserLoginMap" parameterType="string">
+        select * from lssg_user_login where user_name = #{username}
+    </select>
+
+    <select id="selectUserLoginInfoByUserId" resultMap="lssgUserLoginMap" parameterType="Integer">
+        select * from lssg_user_login where user_id = #{userId}
+    </select>
+
+
+    <!--添加一条数据-->
+    <insert id="addOneUserLoginInfo" parameterType="com.lianwei.lssg.entity.LssgUserLogin" >
+        insert into lssg_user_login
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="userName != null" >
+                user_name,
+            </if>
+            <if test="userPwd != null" >
+                user_pwd,
+            </if>
+            <if test="registTime != null" >
+                regist_time,
+            </if>
+
+
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="userName != null" >
+                #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="userPwd != null" >
+                #{userPwd,jdbcType=VARCHAR},
+            </if>
+            <if test="registTime != null" >
+                #{registTime,jdbcType=TIMESTAMP},
+            </if>
+
+        </trim>
+    </insert>
+
+    <!--修改密码-->
+    <update id="updateUserPwdByUserId" parameterType="com.lianwei.lssg.entity.LssgUserLogin">
+        update lssg_user_login
+        <set >
+            <if test="userPwd != null" >
+                user_pwd = #{userPwd,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <update id="forbidUserByUserId" parameterType="com.lianwei.lssg.entity.LssgUserLogin">
+        update lssg_user_login
+        <set >
+            <if test="userState != null" >
+                user_state = #{userState},
+            </if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <!--删除一个user信息-->
+    <delete id="delOneUserById" parameterType="INTEGER">
+        delete  from lssg_user_login
+        where user_id = #{userId}
+    </delete>
+
+    <!--批量删除-->
+    <delete id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        delete  from lssg_user_login
+        where user_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="querySize" resultType="int">
+        select count(*)
+        from lssg_user_login
+        where user_state = 0
+    </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

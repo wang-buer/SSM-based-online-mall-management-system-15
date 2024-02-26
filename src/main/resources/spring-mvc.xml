@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!-- 配置注解驱动-->
+    <mvc:annotation-driven />
+	<!-- 配置包扫描器 -->
+    <context:component-scan base-package="com.lianwei.lssg.controller"/>
+
+
+    <!--启用默认servlet-->
+    <mvc:default-servlet-handler/>
+
+	<!-- 开启aop，对类代理 -->
+    <aop:config proxy-target-class="true"/>
+	<!-- 视图页面配置 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+
+	</bean>
+
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="1" /><!-- 设置解析优先级，越小优先级越高 -->
+	</bean>
+
+    <!-- 文件上传的解析器 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 上传图片的最大尺寸 10M-->
+        <!--<property name="maxUploadSize" value="10485760"></property>-->
+        <!-- 默认编码 -->
+        <property name="defaultEncoding" value="utf-8"/>
+    </bean>
+
+    <!--配置fastJSON解析-->
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json</value>
+                        <value>application/xml;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+
+
+	
+	<!--配置静态资源访问-->
+    <mvc:resources mapping="/statics/**" location="/statics/"/>
+    <mvc:resources mapping="/uploadfiles/**" location="/uploadfiles/"/>
+
+    <!-- enable shiro's annotation-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <!-- ⾃动代理⽣成器，等价于aop:config;
+    aop:config 或 AutoProxyCreator两者选其⼀，spring官⽅提醒千万不要同时使⽤。
+
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor"/>
+    -->
+    <aop:config/>
+    <!-- 在 此 bean 的 构 建 过 程 中 ， 初 始 化 了 ⼀ 些 额 外 功 能 和 piontcut interceptors.add(new RoleAnnotationMethodInterceptor(resolver));
+    interceptors.add(new PermissionAnnotationMethodInterceptor(resolver)); interceptors.add(new AuthenticatedAnnotationMethodInterceptor(resolver)); interceptors.add(new UserAnnotationMethodInterceptor(resolver)); interceptors.add(new GuestAnnotationMethodInterceptor(resolver));
+    -->
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+    <!-- mvc.xml中：MVC的⾃定义异常处理器,⽤于处理权限或身份认证不通过时的异常处理-->
+   <!-- <bean class="com.lianwei.lssg.Exception.MyExceptionResolver"/>-->
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/page/**"/>
+            <mvc:exclude-mapping path="/admin/login"/>
+            <bean class="com.lianwei.lssg.intercepter.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>

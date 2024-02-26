@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgOrdersMapper">
+    <resultMap id="orderMap" type="com.lianwei.lssg.entity.LssgOrders">
+        <id property="orderId" column="order_id"/>
+        <result property="orderTotalPrice" column="order_total_price"/>
+        <result property="doOrderTime" column="do_order_time"/>
+        <result property="totalNum" column="total_num"/>
+        <result property="paymentName" column="payment_name"/>
+        <result property="notes" column="notes"/>
+        <result property="orderState" column="order_state"/>
+        <association property="lssgOrderAction" javaType="com.lianwei.lssg.entity.LssgOrderAction">
+            <id property="orderActionId" column="order_action_id"/>
+            <result property="orderId" column="a_order_id"/>
+            <result property="orderPayStatus" column="order_pay_status"/>
+            <result property="shoppingStatus" column="shopping_status"/>
+            <result property="lastPayTime" column="last_pay_time"/>
+            <result property="sentProductTime" column="sent_product_time"/>
+            <result property="state" column="state"/>
+            <result property="orderStatus" column="order_status"/>
+        </association>
+        <association property="lssgAddress" javaType="com.lianwei.lssg.entity.LssgAddress">
+            <id property="addressId" column="address_id"/>
+        </association>
+        <association property="lssgPayment" javaType="com.lianwei.lssg.entity.LssgPayment">
+            <id property="paymentId" column="payment_id"/>
+            <result property="paymentName" column="payment_name"/>
+            <result property="paymentState" column="payment_state"/>
+            <result property="paymentImg" column="payment_img"/>
+        </association>
+
+    </resultMap>
+    <!--添加订单信息-->
+    <insert id="addOrders" parameterType="com.lianwei.lssg.entity.LssgOrders">
+        insert into lssg_orders
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="lssgUserLogin.userId != null" >
+                user_id,
+            </if>
+            <if test="lssgPayment != null">
+                <if test="lssgPayment.paymentId != null" >
+                    payment_id,
+                </if>
+            </if>
+            <if test="lssgAddress != null">
+                <if test="lssgAddress.addressId != null" >
+                    address_id,
+                </if>
+            </if>
+
+            <if test="paymentName != null" >
+                payment_name,
+            </if>
+            <if test="orderTotalPrice != null" >
+                order_total_price,
+            </if>
+            <if test="doOrderTime != null" >
+                do_order_time,
+            </if>
+            <if test="totalNum != null" >
+                total_num,
+            </if>
+            <if test="notes != null" >
+                notes,
+            </if>
+            <if test="orderState != null" >
+                order_state,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="lssgUserLogin.userId != null" >
+                #{lssgUserLogin.userId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgPayment != null">
+                <if test="lssgPayment.paymentId != null" >
+                    #{lssgPayment.paymentId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="lssgAddress != null">
+                <if test="lssgAddress.addressId != null" >
+                    #{lssgAddress.addressId,jdbcType=INTEGER},
+                </if>
+            </if>
+
+            <if test="paymentName != null" >
+                #{paymentName,jdbcType=VARCHAR},
+            </if>
+            <if test="orderTotalPrice != null" >
+                #{orderTotalPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="doOrderTime != null" >
+                #{doOrderTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="totalNum != null" >
+                #{totalNum,jdbcType=DECIMAL},
+            </if>
+            <if test="notes != null" >
+                #{notes,jdbcType=VARCHAR},
+            </if>
+            <if test="orderState != null" >
+                #{orderState,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <!--删除一个订单信息-->
+    <update id="delOneOrder" parameterType="String">
+        update lssg_orders
+        set order_state = 1
+        where order_id = #{orderId}
+    </update>
+
+    <!--批量删除订单-->
+    <update id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        update lssg_orders
+        set order_state = 1
+        where order_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--添加订单动作信息-->
+    <insert id="addOrderAction" parameterType="com.lianwei.lssg.entity.LssgOrderAction">
+        insert into lssg_order_action
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="orderActionId != null" >
+                order_action_id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="orderPayStatus != null" >
+                order_pay_status,
+            </if>
+            <if test="shoppingStatus != null" >
+                shopping_status,
+            </if>
+            <if test="lastPayTime != null" >
+                last_pay_time,
+            </if>
+            <if test="orderStatus != null" >
+                order_status,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="orderActionId != null" >
+                #{orderActionId,jdbcType=INTEGER},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderPayStatus != null" >
+                #{orderPayStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="shoppingStatus != null" >
+                #{shoppingStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="lastPayTime != null" >
+                #{lastPayTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="orderStatus != null" >
+                #{orderStatus,jdbcType=INTEGER},
+            </if>
+
+        </trim>
+    </insert>
+    <!--根据订单id查询一条订单动作信息-->
+    <select id="findOneActionByOrderId" parameterType="String" resultType="com.lianwei.lssg.entity.LssgOrderAction">
+        select *
+        from lssg_order_action
+        where order_id = #{orderId}
+    </select>
+    <!--订单未付款、待收货、待发货-->
+    <select id="findSomeActionByMap" parameterType="map" resultType="com.lianwei.lssg.entity.LssgOrderAction">
+        select *
+        from lssg_order_action
+        <where>
+
+            <if test="shoppingStatus != null">
+               shopping_status = #{shoppingStatus}
+            </if>
+            <if test="orderPayStatus != null">
+                order_pay_status =#{orderPayStatus}
+            </if>
+        </where>
+    </select>
+    <!--根据订单ID删除一条订单动作信息-->
+    <update id="delOneActionByOrderId" parameterType="String">
+    update lssg_order_action
+    set state = 1
+    where order_id = #{orderId}
+    </update>
+    <!--更新订单动作信息-->
+    <update id="updateOrderActionByOrderId" parameterType="com.lianwei.lssg.entity.LssgOrderAction">
+        update lssg_order_action
+        <set >
+
+            <if test="orderPayStatus != null" >
+                order_pay_status = #{orderPayStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="shoppingStatus != null" >
+                shopping_status = #{shoppingStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="lastPayTime != null" >
+                last_pay_time = #{lastPayTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="orderStatus != null" >
+                order_status = #{orderStatus,jdbcType=INTEGER},
+            </if>
+            <if test="sentProductTime != null" >
+                sent_product_time = #{sentProductTime,jdbcType=TIMESTAMP},
+            </if>
+
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <!--添加订单项-->
+    <insert id="addOrderItem" parameterType="com.lianwei.lssg.entity.LssgOrderItem">
+        insert into lssg_order_item
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="orderItemId != null" >
+                order_item_id,
+            </if>
+            <if test="lssgOrders != null">
+                <if test="lssgOrders.orderId != null" >
+                    order_id,
+                </if>
+            </if>
+           <if test="lssgProduct != null">
+               <if test="lssgProduct.productId != null" >
+                   product_id,
+               </if>
+           </if>
+
+            <if test="orderProductNum != null" >
+                order_product_num,
+            </if>
+            <if test="subtotalPrice != null" >
+                subtotal_price,
+            </if>
+            <if test="orderProductWeight != null" >
+                order_product_weight,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="orderItemId != null" >
+                #{orderItemId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgOrders != null">
+                <if test="lssgOrders.orderId != null" >
+                    #{lssgOrders.orderId,jdbcType=VARCHAR},
+                </if>
+            </if>
+            <if test="lssgProduct != null">
+                <if test="lssgProduct.productId != null" >
+                    #{lssgProduct.productId,jdbcType=VARCHAR},
+                </if>
+            </if>
+
+            <if test="orderProductNum != null" >
+                #{orderProductNum,jdbcType=VARCHAR},
+            </if>
+            <if test="subtotalPrice != null" >
+                #{subtotalPrice,jdbcType=TIMESTAMP},
+            </if>
+            <if test="orderProductWeight != null" >
+                #{orderProductWeight,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+
+    <!--根据用户ID分页查询用户订单-->
+    <select id="findOrderByUserId" parameterType="INTEGER" resultMap="orderMap">
+        select t1.*,t2.*,t3.*
+        from lssg_orders t1,lssg_order_action t2,lssg_payment t3
+        where t1.order_id = t2.order_id
+        and t1.user_id = #{userId}
+        and t1.payment_id = t3.payment_id
+        and t1.order_state = 0
+        and t2.order_status &lt;&gt;2
+        order by t1.do_order_time desc
+    </select>
+
+    <!--根据订单id查找-->
+    <select id="findOneByOrderId" parameterType="string" resultMap="orderMap">
+        select *
+        from lssg_orders
+        where order_id = #{orderId}
+    </select>
+
+    <select id="findOrderByMap" parameterType="map" resultMap="orderMap">
+        select t1.*,t2.*
+        from lssg_orders t1,lssg_order_action t2
+        <where>
+
+        <if test="shoppingStatus != null">
+            t2.shopping_status = #{shoppingStatus}
+        </if>
+        <if test="orderPayStatus != null">
+            t2.order_pay_status =#{orderPayStatus}
+        </if>
+        <if test="orderStatus != null">
+           or t2.order_status =#{orderStatus}
+        </if>
+            <if test="orderStatus == null">
+                and t2.order_status &lt;&gt; 1
+            </if>
+        </where>
+        and t1.order_id = t2.order_id
+        and t1.order_state = 0
+        and t1.user_id = #{userId}
+        order by t1.do_order_time desc
+    </select>
+
+
+    <select id="findAllOrderByMap" parameterType="map" resultMap="orderMap">
+        select t1.*,t2.*
+        from lssg_orders t1,lssg_order_action t2
+        <where>
+
+            <if test="orderId != null and orderId != ''">
+                t1.order_id = #{orderId},
+            </if>
+            <if test="PaymentName != null">
+                and t1.payment_name =#{PaymentName}
+            </if>
+            <if test="statTime != null and statTime != ''">
+                <if test="endTime != null and endTime != ''">
+                    and  t1.do_order_time between #{statTime} and #{endTime}
+                </if>
+            </if>
+            <if test="paymentName != null and paymentName != ''">
+                and  t1.payment_name =#{paymentName}
+            </if>
+           and t1.order_id = t2.order_id
+        </where>
+        order by t1.do_order_time desc
+    </select>
+
+    <select id="findAllOrderWithPage" parameterType="map" resultMap="orderMap">
+        select t1.*,t2.*,t3.*
+        from lssg_orders t1,lssg_order_action t2,lssg_payment t3
+        <where>
+
+            <if test="orderId != null and orderId != ''">
+                t1.order_id = #{orderId}
+            </if>
+            <if test="statTime != null and statTime != ''">
+                <if test="endTime != null and endTime != ''">
+                    and  t1.do_order_time between #{statTime} and #{endTime}
+                </if>
+            </if>
+            <if test="paymentId !=null and paymentId !=''">
+                and  t1.payment_id =#{paymentId}
+            </if>
+            <if test="orderStatus !=null and orderStatus !=''">
+                <if test="orderStatus == 1">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 2">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 3">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 4">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 5">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+            </if>
+            and t1.order_id = t2.order_id
+            and t1.payment_id = t3.payment_id
+            and t1.order_state = 0
+        </where>
+        order by t1.do_order_time desc
+        limit #{start},#{nums}
+    </select>
+
+    <!--查询满足条件总条数据-->
+    <select id="querySize" resultType="int" parameterType="map">
+        select count(*)
+        from lssg_orders t1,lssg_order_action t2,lssg_payment t3
+        <where>
+
+            <if test="orderId != null and orderId != ''">
+                t1.order_id = #{orderId},
+            </if>
+            <if test="PaymentName != null">
+                and t1.payment_name =#{PaymentName}
+            </if>
+            <if test="statTime != null and statTime != ''">
+                <if test="endTime != null and endTime != ''">
+                    and  t1.do_order_time between #{statTime} and #{endTime}
+                </if>
+            </if>
+            <if test="paymentId !=null and paymentId !=''">
+                and  t1.payment_id =#{paymentId}
+            </if>
+            <if test="orderStatus !=null and orderStatus !=''">
+                <if test="orderStatus == 1">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 2">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 3">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 4">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+                <if test="orderStatus == 5">
+                    and  t2.order_status =#{orderStatus}
+                </if>
+            </if>
+            and t1.order_id = t2.order_id
+            and t1.payment_id = t3.payment_id
+            and t1.order_state = 0
+        </where>
+        order by t1.do_order_time desc
+    </select>
+
+    <!--根据用户ID 、orderId-->
+    <select id="findOneByOrderIdAndUserId" parameterType="map" resultMap="orderMap">
+        select *
+        from lssg_orders
+        where order_id = #{orderId}
+        and user_id = #{userId}
+    </select>
+    <!--更新订单地址、支付方式-->
+    <update id="updateOrderWithAddIdAndPayId" parameterType="com.lianwei.lssg.entity.LssgOrders">
+        update lssg_orders
+        <set >
+            <if test="lssgPayment != null">
+                <if test="lssgPayment.paymentId != null">
+                     payment_id = #{lssgPayment.paymentId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="lssgAddress != null">
+                <if test="lssgAddress.addressId != null" >
+                    address_id = #{lssgAddress.addressId,jdbcType=INTEGER},
+                </if>
+            </if>
+
+            <if test="paymentName != null" >
+                payment_name = #{paymentName,jdbcType=VARCHAR},
+            </if>
+
+            <if test="doOrderTime != null" >
+                do_order_time = #{doOrderTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="notes != null" >
+                notes = #{notes,jdbcType=VARCHAR},
+            </if>
+
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <!--通过用户id查询所有订单-->
+    <select id="selectAllOrdersByUid" resultType="com.lianwei.lssg.entity.LssgOrders">
+        select *
+        from lssg_orders
+        where user_id = #{uid}
+    </select>
+
+
+    <select id="querySizeByMap" parameterType="map" resultType="int">
+        select count(*)
+        from lssg_orders t1,lssg_order_action t2
+        <where>
+            <if test="shoppingStatus != null">
+                t2.shopping_status = #{shoppingStatus}
+            </if>
+            <if test="orderPayStatus != null">
+                t2.order_pay_status =#{orderPayStatus}
+            </if>
+            and t1.order_id = t2.order_id
+            and t1.order_state = 0
+            and t2.order_status &lt;&gt; 1
+            and t1.user_id = #{userId}
+        </where>
+    </select>
+
+
+    <!---->
+    <select id="countOrderAction" parameterType="com.lianwei.lssg.entity.LssgOrderAction" resultType="INTEGER">
+        select count(*)
+        from lssg_order_action
+        <where>
+            <if test="orderStatus !=null and orderStatus !=''">
+                <if test="orderStatus == 2">
+                    order_status = #{orderStatus}
+                </if>
+                <if test="orderStatus == 4">
+                    order_status = #{orderStatus}
+                </if>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>
+
+
+
+
+
+
+
+

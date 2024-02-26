@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgUserInfoMapper">
+
+    <resultMap id="lssgUserInfoMap" type="com.lianwei.lssg.entity.LssgUserInfo">
+        <id property="userInfoId" column="user_info_id"/>
+        <result property="userRealname" column="user_realname"/>
+        <result property="userSex" column="user_sex"/>
+        <result property="userTel" column="user_tel"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userImg" column="user_img"/>
+        <result property="userAddr" column="user_addr"/>
+        <association property="lssgUserLogin" javaType="com.lianwei.lssg.entity.LssgUserLogin">
+            <id property="userId" column="user_id"/>
+            <result property="userName" column="user_name"/>
+            <result property="userPwd" column="user_pwd"/>
+            <result property="loginIsActive" column="login_is_active"/>
+            <result property="registTime" column="regist_time"/>
+            <result property="lastTime" column="last_time"/>
+            <result property="userState" column="user_state"/>
+        </association>
+    </resultMap>
+    <!---->
+    <insert id="addOneUserInfo" parameterType="com.lianwei.lssg.entity.LssgUserInfo">
+        insert into lssg_user_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="userInfoId != null" >
+                user_info_id,
+            </if>
+            <if test="lssgUserLogin != null">
+                <if test="lssgUserLogin.userId != null" >
+                    user_id,
+                </if>
+            </if>
+
+            <if test="userRealname != null" >
+                user_realname,
+            </if>
+            <if test="userSex != null" >
+                user_sex,
+            </if>
+            <if test="userTel != null" >
+                user_tel,
+            </if>
+            <if test="userEmail != null" >
+                user_email,
+            </if>
+            <if test="userImg != null" >
+                user_img,
+            </if>
+            <if test="userAddr != null" >
+                user_addr,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="userInfoId != null" >
+                #{userInfoId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgUserLogin != null">
+                <if test="lssgUserLogin.userId != null" >
+                    #{lssgUserLogin.userId,jdbcType=INTEGER},
+                </if>
+            </if>
+
+            <if test="userRealname != null" >
+                #{userRealname,jdbcType=VARCHAR},
+            </if>
+            <if test="userSex != null" >
+                #{userSex,jdbcType=CHAR},
+            </if>
+            <if test="userTel != null" >
+                #{userTel,jdbcType=VARCHAR},
+            </if>
+            <if test="userEmail != null" >
+                #{userEmail,jdbcType=VARCHAR},
+            </if>
+            <if test="userImg != null" >
+                #{userImg,jdbcType=VARCHAR},
+            </if>
+            <if test="userAddr != null" >
+                #{userAddr,jdbcType=VARCHAR},
+            </if>
+
+        </trim>
+    </insert>
+
+    <!--根据userId查询一条用户信息-->
+    <select id="selectOneByUserId" resultType="com.lianwei.lssg.entity.LssgUserInfo">
+        select *
+        from lssg_user_info
+        where user_id = #{userId}
+    </select>
+    <!--根据userInfoId查询一条用户信息-->
+    <select id="selectOneByUserInfoId" resultMap="lssgUserInfoMap">
+        select *
+        from lssg_user_info
+        where user_info_id = #{userInfoId}
+    </select>
+
+    <!--修改用户信息-->
+    <update id="updateOneUserInfo" parameterType="com.lianwei.lssg.entity.LssgUserInfo">
+        update lssg_user_info
+        <set >
+            <if test="userRealname != null and userRealname != ''">
+                user_realname = #{userRealname,jdbcType=VARCHAR},
+            </if>
+            <if test="userSex != null and userSex != ''">
+                user_sex = #{userSex,jdbcType=CHAR},
+            </if>
+            <if test="userEmail != null and userEmail != ''">
+                user_email = #{userEmail,jdbcType=VARCHAR},
+            </if>
+            <if test="userTel != null and userTel != ''">
+                user_tel = #{userTel,jdbcType=VARCHAR},
+            </if>
+
+            <if test="userImg != null and userImg != ''">
+                user_img = #{userImg,jdbcType=VARCHAR},
+            </if>
+
+            <if test="userAddr != null and userAddr != ''">
+                user_addr = #{userAddr,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where user_info_id = ${userInfoId}
+    </update>
+
+    <!--查询出所有公告信息-->
+    <select id="findAllUserInfoWithPage" resultMap="lssgUserInfoMap" parameterType="map">
+        select t1.* , t2.*
+        from lssg_user_info t1, lssg_user_login t2
+        <where>
+            <if test="userName != null and userName != ''">
+                t2.user_name =#{userName}
+            </if>
+            and t1.user_id = t2.user_id
+        </where>
+        limit #{start},#{nums}
+    </select>
+
+    <!--查询满足条件总条数据-->
+    <select id="querySize" resultType="int" parameterType="map">
+        select count(*)
+        from lssg_user_info t1, lssg_user_login t2
+        <where>
+            <if test="userName != null and userName != ''">
+                t2.user_name =#{userName}
+            </if>
+            and t1.user_id = t2.user_id
+        </where>
+    </select>
+
+    <!--删除一个user信息-->
+    <delete id="delOneUserInfoById" parameterType="INTEGER">
+        delete  from lssg_user_info
+        where user_info_id = #{userInfoId}
+    </delete>
+
+    <!--批量删除-->
+    <delete id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        delete  from lssg_user_info
+        where user_info_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+</mapper>

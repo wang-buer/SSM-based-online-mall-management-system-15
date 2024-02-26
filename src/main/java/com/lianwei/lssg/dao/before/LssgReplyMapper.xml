@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgReplyMapper">
+    <resultMap id="replyMap" type="com.lianwei.lssg.entity.LssgReply">
+        <id property="replyId" column="reply_id"/>
+        <result property="replyName" column="reply_name"/>
+        <result property="replyUserId" column="reply_user_id"/>
+        <result property="replyUrl" column="reply_url"/>
+        <result property="replyTime" column="reply_time"/>
+        <result property="replyContent" column="reply_content"/>
+        <result property="replyIsShow" column="reply_is_show"/>
+        <result property="toUserId" column="to_user_id"/>
+        <association property="lssgMessage" javaType="com.lianwei.lssg.entity.LssgMessage">
+            <id property="messageId" column="message_id"/>
+
+        </association>
+
+    </resultMap>
+
+    <!--回复信息-->
+    <insert id="insertOneReply" parameterType="com.lianwei.lssg.entity.LssgReply">
+      insert into lssg_reply
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+
+            <if test="replyId != null">
+                reply_id,
+            </if>
+            <if test="replyUserId !=null">
+                reply_user_id,
+            </if>
+            <if test="lssgProduct !=null">
+                <if test="lssgProduct.productId !=null">
+                    reply_product_id,
+                </if>
+            </if>
+            <if test="lssgMessage !=null">
+                <if test="lssgMessage.messageId !=null">
+                    message_id,
+                </if>
+            </if>
+            <if test="replyTime != null">
+                reply_time,
+            </if>
+            <if test="replyContent != null">
+                reply_content,
+            </if>
+            <if test="toUserId != null">
+                to_user_id,
+            </if>
+        </trim>
+
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="replyId != null">
+                #{replyId,jdbcType=INTEGER},
+            </if>
+            <if test="replyUserId !=null">
+                #{replyUserId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgProduct !=null">
+                <if test="lssgProduct.productId !=null">
+                    #{lssgProduct.productId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="lssgMessage !=null">
+                <if test="lssgMessage.messageId !=null">
+                    #{lssgMessage.messageId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="replyTime != null">
+                #{replyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="replyContent != null">
+                #{replyContent,jdbcType=VARCHAR},
+            </if>
+            <if test="toUserId != null">
+                #{toUserId,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <!--通过messageId查询所有-->
+    <select id="selectAllReplyByMessageId" resultType="com.lianwei.lssg.entity.LssgReply" parameterType="INTEGER">
+      select *
+      from lssg_reply
+      where message_id = #{messageId}
+      and reply_product_id = #{replyProductId}
+      and reply_is_show = 0
+    </select>
+
+    <!--通过messageId查询所有-->
+    <select id="findAllReplyByMessageId" resultType="com.lianwei.lssg.entity.LssgReply" parameterType="map">
+      select t1.*,t2.*,t3.*
+      from lssg_reply t1,lssg_user_info t2,lssg_user_login t3
+      <where>
+          <if test="messageId!=null and messageId !=''">
+              t1.message_id = #{messageId}
+          </if>
+          <if test="replyProductId!=null and replyProductId !=''">
+              and t1.reply_product_id = #{replyProductId}
+          </if>
+          and t1.reply_user_id = t2.user_id
+          and t1.reply_user_id = t3.user_id
+          and t1.reply_is_show = 0
+      </where>
+    </select>
+
+    <!--删除-->
+    <update id="updateOneReplyInfo" parameterType="Integer">
+        update lssg_reply
+        set reply_is_show = 1
+        where reply_id = #{replyId}
+    </update>
+
+
+    <select id="selectOneReplyByReplyId" parameterType="Integer" resultType="com.lianwei.lssg.entity.LssgReply">
+        select t1.*,t2.*,t3.*
+        from lssg_reply t1,lssg_user_login t2,lssg_user_info t3
+        where t1.reply_is_show = 0
+        and t1.reply_id = #{replyId}
+        and t1.reply_user_id = t2.user_id
+        and t1.reply_user_id = t3.user_id
+    </select>
+
+    <select id="query" resultMap="replyMap" parameterType="java.util.Map">
+        select t1.*,t2.*,t3.*
+        from lssg_reply t1,lssg_message t2,lssg_user_login t3
+        <where>
+            <if test="query!=null and query!=''">
+                concat(t1.reply_id,t1.reply_name) like  "%${query}%"
+            </if>
+            and t1.message_id = t2.message_id
+            and t1.reply_user_id = t2.user_id
+            and t1.reply_user_id = t3.user_id
+            and t1.reply_is_show = 0
+        </where>
+        limit  #{start},#{nums};
+    </select>
+
+    <select id="querySize" resultType="int" parameterType="java.util.Map">
+        select count(*)
+        from lssg_reply t1,lssg_message t2,lssg_user_login t3
+        <where>
+            <if test="query!=null and query!=''">
+                concat(t1.reply_id,t1.reply_name) like  "%${query}%"
+            </if>
+            and t1.message_id = t2.message_id
+            and t1.reply_user_id = t2.user_id
+            and t1.reply_user_id = t3.user_id
+            and t1.reply_is_show = 0
+        </where>
+    </select>
+
+</mapper>
+
+
+
+
+
+

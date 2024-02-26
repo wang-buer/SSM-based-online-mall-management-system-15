@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<settings>
+		<!--开启二级缓存
+		<setting name="cacheEnabled" value="true" />-->
+		<!--懒加载配置-->
+        <setting name="lazyLoadingEnabled" value="true" />
+        <setting name="aggressiveLazyLoading" value="false" />
+
+        <!--数据库字段名a_column 转 java属性名 aColumn 的映射配置（全局配置）-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+
+	</settings>
+	<!-- 加载映射文件 MapperScannerConfigurer代替了-->
+	<!--<mappers>
+		<mapper resource="com/lianwei/dao/CharacterMapper.xml" />
+		<mapper resource="com/lianwei/dao/StudentMapper.xml" />
+	</mappers>-->
+
+    <!-- 配置分页插件 -->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 设置数据库类型 Oracle,Mysql,MariaDB,SQLite,Hsqldb,PostgreSQL六种数据库-->
+            <property name="helperDialect" value="mysql"/>
+        </plugin>
+    </plugins>
+</configuration>

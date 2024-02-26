@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgCollectProductsMapper">
+    <resultMap id="collectMap" type="com.lianwei.lssg.entity.LssgCollectProducts">
+        <id column="collect_id" property="collectId"/>
+        <result column="user_id" property="userId"/>
+        <result column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_img" property="productImg"/>
+        <result column="product_num" property="productNum"/>
+        <result column="add_collect_time" property="addCollectTime"/>
+        <result column="collect_state" property="collectState"/>
+
+
+    </resultMap>
+    <!--添加到收藏夹-->
+    <insert id="addProductToCollect" parameterType="com.lianwei.lssg.entity.LssgCollectProducts">
+        insert into lssg_collect_products
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="collectId != null" >
+                collect_id,
+            </if>
+            <if test="productId != null" >
+                product_id,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="addCollectTime != null" >
+                add_collect_time,
+            </if>
+            <if test="collectState != null" >
+                collect_state,
+            </if>
+            <if test="productName != null" >
+                product_name,
+            </if>
+            <if test="productImg != null" >
+                product_img,
+            </if>
+            <if test="productNum != null" >
+                product_num,
+            </if>
+            <if test="productPrice != null" >
+                product_price,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="collectId != null" >
+                #{collectId,jdbcType=INTEGER},
+            </if>
+            <if test="productId != null" >
+                #{productId,jdbcType=INTEGER},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="addCollectTime != null" >
+                #{addCollectTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="collectState != null" >
+                #{collectState,jdbcType=VARCHAR},
+            </if>
+            <if test="productName != null" >
+                #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="productImg != null" >
+                #{productImg,jdbcType=VARCHAR},
+            </if>
+            <if test="productNum != null" >
+                #{productNum,jdbcType=INTEGER},
+            </if>
+            <if test="productPrice != null" >
+                #{productPrice,jdbcType=DECIMAL},
+            </if>
+
+        </trim>
+    </insert>
+
+    <!--查询收藏夹信息-->
+    <select id="selectCollectProductByUserId" resultMap="collectMap" parameterType="INTEGER">
+      select *
+      from lssg_collect_products
+      where user_id = #{userId}
+      order by add_collect_time desc
+
+    </select>
+
+    <!--查询该商品是否已收藏-->
+    <select id="selectOneCollectProductByProductIdAndUid" resultMap="collectMap" parameterType="map">
+      select *
+      from lssg_collect_products
+      where product_id = #{productId}
+      and user_id = #{userId}
+    </select>
+
+    <!--删除商品-->
+    <delete id="delCollectProduct"  parameterType="map">
+        delete from lssg_collect_products where user_id=#{userId} and product_id=#{productId}
+
+    </delete>
+
+    <!--统计数量-->
+    <select id="countCollectNum" parameterType="string" resultType="INTEGER">
+        select count(*)
+        from lssg_collect_products t1,lssg_user_login t2
+        where t1.user_id = t2.user_id
+        and t1.collect_state = 0
+        and t2.user_name = #{userName}
+    </select>
+</mapper>
+
+
+
+
+
+

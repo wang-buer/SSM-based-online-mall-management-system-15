@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgProductMapper">
+    <resultMap id="BaseResultMap" type="com.lianwei.lssg.entity.LssgProduct">
+        <id property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productUpTime" column="product_up_time"/>
+        <result property="productDownTime" column="product_down_time"/>
+        <result property="productPhoto" column="product_photo"/>
+        <result property="smallPhoto" column="small_photo"/>
+        <result property="bigPhoto" column="big_photo"/>
+        <result property="productMarketPrice" column="product_market_price"/>
+        <result property="productMallPrice" column="product_mall_price"/>
+        <result property="productNum" column="product_num"/>
+        <result property="soldNum" column="sold_num"/>
+        <result property="productWeight" column="product_weight"/>
+        <result property="promotePrice" column="promote_price"/>
+        <result property="promoteStartDate" column="promote_start_date"/>
+        <result property="promoteEndDate" column="promote_end_date"/>
+        <result property="fregiht" column="fregiht"/>
+        <result property="isBest" column="is_best"/>
+        <result property="isNew" column="is_new"/>
+        <result property="isHot" column="is_hot"/>
+        <result property="isSpecial" column="is_special"/>
+        <result property="isState" column="is_state"/>
+        <result property="productAddr" column="product_addr"/>
+        <result property="productNotes" column="product_notes"/>
+        <result property="productEffect" column="product_effect"/>
+        <association property="lssgProductClass" javaType="com.lianwei.lssg.entity.LssgProductClass">
+            <id property="productClassId" column="product_class_id"/>
+            <result property="productClassName" column="product_class_name"/>
+            <result property="productIsShow" column="product_is_show"/>
+            <result property="productDescription" column="product_description"/>
+        </association>
+    </resultMap>
+
+
+
+    <!---->
+    <select id="selectOneProductByProductId" resultMap="BaseResultMap" parameterType="Integer">
+        select t1.*,t2.*
+        from lssg_product t1, lssg_product_class t2
+        where t1.product_class_id = t2.product_class_id
+        and t1.product_id = #{productId}
+        and t1.is_state = 0 and t2.product_is_show = 0
+    </select>
+
+
+
+    <select id="selectAllProductByProductClassId" resultMap="BaseResultMap" parameterType="Integer">
+        select t1.*,t2.*
+        from lssg_product t1, lssg_product_class t2
+        where t1.product_class_id = t2.product_class_id
+          and t1.product_class_id = #{productClassId}
+          and t1.is_state = 0 and t2.product_is_show = 0
+        limit 4
+    </select>
+<!--根据收藏夹中的商品id查询所有满足条件的商品信息-->
+    <select id="selectProductsByProductId" resultMap="BaseResultMap">
+        select t1.product_id,t1.product_name,t1.product_photo,t1.product_market_price,t1.product_mall_price,t1.product_num,
+                t1.is_state,t2.product_class_id,t2.product_class_name,t2.product_is_show,t3.product_id
+        from lssg_product t1, lssg_product_class t2,lssg_collect_products t3
+        where t1.product_class_id = t2.product_class_id
+        and t1.product_id = t3.product_id
+    </select>
+
+    <!--<sql id="Base_Column_List" >
+    product_id, product_class_id, product_name, product_up_time, product_down_time, product_photo,
+    small_photo, big_photo, product_market_price, product_mall_price, product_num, sold_num,
+    product_weight, promote_price, promote_start_date, promote_end_date, fregiht,is_best,
+    is_new, is_hot, is_special, is_state, product_addr, product_notes
+    </sql>-->
+
+    <!--多表查询单条数据-->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+         select p.*,c.* from lssg_product p,lssg_product_class c
+         where p. product_class_id= c.product_class_id
+        and p.product_id = #{productId}
+    </select>
+
+    <select id="selectByPrimaryKey2" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select *
+        from lssg_product
+        where product_id = #{product_id,jdbcType=INTEGER}
+    </select>
+
+    <!-- <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+       delete from lssg_product
+       where product_id = #{productId,jdbcType=INTEGER}
+     </delete>-->
+
+    <!--删除一条数据-->
+    <update id="deleteByPrimaryKey" parameterType="com.lianwei.lssg.entity.LssgProduct" >
+    update lssg_product
+    set is_state = 1
+    where product_id = #{productId,jdbcType=INTEGER}
+  </update>
+
+    <!--批量删除多条数据（前端传递过来的为一个数组）-->
+    <!-- <delete id="batchDelete2" parameterType="java.util.Arrays">
+       <foreach collection="productIds" item="productId" open="(" separator="," close=")">
+         #{productId}
+       </foreach>
+     </delete>-->
+
+    <update id="batchDelete" parameterType="java.util.Arrays">
+        update lssg_product
+        set is_state = 1
+        where product_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </update>
+    <insert id="insert" parameterType="com.lianwei.lssg.entity.LssgProduct" >
+    insert into lssg_product (product_id, product_class_id, product_name,
+      product_up_time, product_down_time, product_photo,
+      small_photo, big_photo, product_market_price,
+      product_mall_price, product_num, sold_num,
+      product_weight, promote_price, promote_start_date,
+      promote_end_date, fregiht, is_best,
+      is_new, is_hot, is_special,
+      is_state, product_addr, product_notes
+      )
+    values (#{product_id,jdbcType=INTEGER}, #{product_class_id,jdbcType=INTEGER}, #{product_name,jdbcType=VARCHAR},
+      #{product_up_time,jdbcType=TIMESTAMP}, #{product_down_time,jdbcType=TIMESTAMP}, #{product_photo,jdbcType=VARCHAR},
+      #{small_photo,jdbcType=VARCHAR}, #{big_photo,jdbcType=VARCHAR}, #{product_market_price,jdbcType=DECIMAL},
+      #{product_mall_price,jdbcType=DECIMAL}, #{product_num,jdbcType=INTEGER}, #{sold_num,jdbcType=INTEGER},
+      #{product_weight,jdbcType=DECIMAL}, #{promote_price,jdbcType=DECIMAL}, #{promote_start_date,jdbcType=TIMESTAMP},
+      #{promote_end_date,jdbcType=TIMESTAMP}, #{fregiht,jdbcType=DECIMAL}, #{is_best,jdbcType=INTEGER},
+      #{is_new,jdbcType=INTEGER}, #{is_hot,jdbcType=INTEGER}, #{is_special,jdbcType=INTEGER},
+      #{is_state,jdbcType=INTEGER}, #{product_addr,jdbcType=VARCHAR}, #{product_notes,jdbcType=VARCHAR}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.lianwei.lssg.entity.LssgProduct" >
+        insert into lssg_product
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="productId != null" >
+                product_id,
+            </if>
+            <if test="lssgProductClass.productClassId != null" >
+                product_class_id,
+            </if>
+            <if test="productName != null" >
+                product_name,
+            </if>
+            <if test="productUpTime != null" >
+                product_up_time,
+            </if>
+            <if test="productDownTime != null" >
+                product_down_time,
+            </if>
+            <if test="productPhoto != null" >
+                product_photo,
+            </if>
+            <if test="smallPhoto != null" >
+                small_photo,
+            </if>
+            <if test="bigPhoto != null" >
+                big_photo,
+            </if>
+            <if test="productMarketPrice != null" >
+                product_market_price,
+            </if>
+            <if test="productMallPrice != null" >
+                product_mall_price,
+            </if>
+            <if test="productNum != null" >
+                product_num,
+            </if>
+            <if test="soldNum != null" >
+                sold_num,
+            </if>
+            <if test="productWeight != null" >
+                product_weight,
+            </if>
+            <if test="promotePrice != null" >
+                promote_price,
+            </if>
+            <if test="promoteStartDate != null" >
+                promote_start_date,
+            </if>
+            <if test="promoteEndDate != null" >
+                promote_end_date,
+            </if>
+            <if test="fregiht != null" >
+                fregiht,
+            </if>
+            <if test="isBest != null" >
+                is_best,
+            </if>
+            <if test="isNew != null" >
+                is_new,
+            </if>
+            <if test="isHot != null" >
+                is_hot,
+            </if>
+            <if test="isSpecial != null" >
+                is_special,
+            </if>
+            <if test="isState != null" >
+                is_state,
+            </if>
+            <if test="productAddr != null" >
+                product_addr,
+            </if>
+            <if test="productNotes != null" >
+                product_notes,
+            </if>
+            <if test="productEffect != null" >
+                product_effect,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="productId != null" >
+                #{productId,jdbcType=INTEGER},
+            </if>
+            <if test="lssgProductClass.productClassId != null" >
+                #{lssgProductClass.productClassId,jdbcType=INTEGER},
+            </if>
+            <if test="productName != null" >
+                #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="productUpTime != null" >
+                #{productUpTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="productDownTime != null" >
+                #{productDownTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="productPhoto != null" >
+                #{productPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="smallPhoto != null" >
+                #{smallPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="bigPhoto != null" >
+                #{bigPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="productMarketPrice != null" >
+                #{productMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productMallPrice != null" >
+                #{productMallPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productNum != null" >
+                #{productNum,jdbcType=INTEGER},
+            </if>
+            <if test="soldNum != null" >
+                #{soldNum,jdbcType=INTEGER},
+            </if>
+            <if test="productWeight != null" >
+                #{productWeight,jdbcType=DECIMAL},
+            </if>
+            <if test="promotePrice != null" >
+                #{promotePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="promoteStartDate != null" >
+                #{promoteStartDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="promoteEndDate != null" >
+                #{promoteEndDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="fregiht != null" >
+                #{fregiht,jdbcType=DECIMAL},
+            </if>
+            <if test="isBest != null" >
+                #{isBest,jdbcType=INTEGER},
+            </if>
+            <if test="isNew != null" >
+                #{isNew,jdbcType=INTEGER},
+            </if>
+            <if test="isHot != null" >
+                #{isHot,jdbcType=INTEGER},
+            </if>
+            <if test="isSpecial != null" >
+                #{isSpecial,jdbcType=INTEGER},
+            </if>
+            <if test="isState != null" >
+                #{isState,jdbcType=INTEGER},
+            </if>
+            <if test="productAddr != null" >
+                #{productAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="productNotes != null" >
+                #{productNotes,jdbcType=VARCHAR},
+            </if>
+            <if test="productEffect != null" >
+                #{productEffect,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.lianwei.lssg.entity.LssgProduct" >
+        update lssg_product
+        <set>
+            <if test="lssgProductClass !=null">
+                <if test="lssgProductClass.productClassId != null" >
+                    product_class_id = #{lssgProductClass.productClassId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="productName != null" >
+                product_name = #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="productUpTime != null" >
+                product_up_time = #{productUpTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="productDownTime != null" >
+                product_down_time = #{productDownTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="productPhoto != null" >
+                product_photo = #{productPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="smallPhoto != null" >
+                small_photo = #{smallPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="bigPhoto != null" >
+                big_photo = #{bigPhoto,jdbcType=VARCHAR},
+            </if>
+            <if test="productMarketPrice != null" >
+                product_market_price = #{productMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productMallPrice != null" >
+                product_mall_price = #{productMallPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productNum != null" >
+                product_num = #{productNum,jdbcType=INTEGER},
+            </if>
+            <if test="soldNum != null" >
+                sold_num = #{soldNum,jdbcType=INTEGER},
+            </if>
+            <if test="productWeight != null" >
+                product_weight = #{productWeight,jdbcType=DECIMAL},
+            </if>
+            <if test="promotePrice != null" >
+                promote_price = #{promotePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="promoteStartDate != null" >
+                promote_start_date = #{promoteStartDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="promoteEndDate != null" >
+                promote_end_date = #{promoteEndDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="fregiht != null" >
+                fregiht = #{fregiht,jdbcType=DECIMAL},
+            </if>
+            <if test="isBest != null" >
+                is_best = #{isBest,jdbcType=INTEGER},
+            </if>
+            <if test="isNew != null" >
+                is_new = #{isNew,jdbcType=INTEGER},
+            </if>
+            <if test="isHot != null" >
+                is_hot = #{isHot,jdbcType=INTEGER},
+            </if>
+            <if test="isSpecial != null" >
+                is_special = #{isSpecial,jdbcType=INTEGER},
+            </if>
+            <if test="isState != null" >
+                is_state = #{isState,jdbcType=INTEGER},
+            </if>
+            <if test="productAddr != null" >
+                product_addr = #{productAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="productNotes != null" >
+                product_notes = #{productNotes,jdbcType=VARCHAR},
+            </if>
+            <if test="productEffect != null" >
+               product_effect = #{productEffect,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where product_id = #{productId,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.lianwei.lssg.entity.LssgProduct" >
+    update lssg_product
+    set product_class_id = #{product_class_id,jdbcType=INTEGER},
+      product_name = #{product_name,jdbcType=VARCHAR},
+      product_up_time = #{product_up_time,jdbcType=DATE},
+      product_down_time = #{product_down_time,jdbcType=TIMESTAMP},
+      product_photo = #{product_photo,jdbcType=VARCHAR},
+      small_photo = #{small_photo,jdbcType=VARCHAR},
+      big_photo = #{big_photo,jdbcType=VARCHAR},
+      product_market_price = #{product_market_price,jdbcType=DECIMAL},
+      product_mall_price = #{product_mall_price,jdbcType=DECIMAL},
+      product_num = #{product_num,jdbcType=INTEGER},
+      sold_num = #{sold_num,jdbcType=INTEGER},
+      product_weight = #{product_weight,jdbcType=DECIMAL},
+      promote_price = #{promote_price,jdbcType=DECIMAL},
+      promote_start_date = #{promote_start_date,jdbcType=TIMESTAMP},
+      promote_end_date = #{promote_end_date,jdbcType=TIMESTAMP},
+      fregiht = #{fregiht,jdbcType=DECIMAL},
+      is_best = #{is_best,jdbcType=INTEGER},
+      is_new = #{is_new,jdbcType=INTEGER},
+      is_hot = #{is_hot,jdbcType=INTEGER},
+      is_special = #{is_special,jdbcType=INTEGER},
+      is_state = #{is_state,jdbcType=INTEGER},
+      product_addr = #{product_addr,jdbcType=VARCHAR},
+      product_notes = #{product_notes,jdbcType=VARCHAR}
+    where product_id = #{product_id,jdbcType=INTEGER}
+  </update>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select * from lssg_product;
+    </select>
+
+    <select id="query" resultMap="BaseResultMap" parameterType="java.util.Map">
+        select p.*,c.*
+        from lssg_product p,lssg_product_class c
+        <where>
+            <if test="query!=null">
+                concat(p.product_id,p.product_name) like  "%${query}%"
+            </if>
+        </where>
+        and p. product_class_id= c.product_class_id
+        order by product_id desc
+        limit  #{start},#{nums};
+    </select>
+
+    <select id="querySize" resultType="int" parameterType="java.util.Map">
+        select count(*) from lssg_product
+        <where>
+            <if test="query!=null">
+                concat(product_id,product_name) like  "%${query}%"
+            </if>
+            and is_state = 0
+        </where>
+    </select>
+
+    <select id="selectLssgProductByProductClassId" resultType="com.lianwei.lssg.entity.LssgProduct" parameterType="java.lang.Integer" >
+        select *  from lssg_product_class where product_class_id = #{id}
+    </select>
+
+    <!--多条件查询-->
+    <select id="selectBySomeProductByMap" parameterType="map" resultMap="BaseResultMap">
+        select t1.*,t2.*
+        from lssg_product t1,lssg_product_class t2
+        <where>
+              <if test="productClassId !=null">
+                  t1.product_class_id = #{productClassId}
+              </if>
+            <if test="isBest !=null">
+               and t1.is_best =#{isBest}
+            </if>
+            <if test="isNew !=null">
+               and t1.is_new = #{isNew}
+            </if>
+            <if test="isHot !=null">
+                and t1.is_hot = #{isHot}
+            </if>
+            <if test="isSpecial !=null">
+                and t1.is_special = #{isSpecial}
+            </if>
+            and t1.is_state = 0
+            and t2.product_is_show = 0
+            and t1.product_class_id = t2.product_class_id
+            order by t1.product_up_time desc
+            limit 12
+        </where>
+    </select>
+
+
+    <select id="selectProductSmallPrice" resultMap="BaseResultMap">
+        select t1.*,t2.*
+        from lssg_product t1,lssg_product_class t2
+        where t1.product_mall_price &lt; 12
+          and t1.is_state = 0
+          and t2.product_is_show = 0
+          and t1.product_class_id = t2.product_class_id
+        order by product_up_time
+    </select>
+
+    <!--商品多条件查询分页显示-->
+    <select id="selectAllProductByMapWithPage" resultMap="BaseResultMap" parameterType="map">
+        select t1.*,t2.*
+        from lssg_product t1, lssg_product_class t2
+        <where>
+            <if test="productClassId !=null">
+                t1.product_class_id = #{productClassId}
+            </if>
+            <if test="shorts ==1">
+                and t1.is_new = 0
+            </if>
+            <if test="shorts ==2">
+                and t1.is_hot = 0
+            </if>
+            <if test="shorts ==3">
+                and t1.is_special = 0
+            </if>
+
+            and t1.is_state = 0
+            and t2.product_is_show = 0
+            and t1.product_class_id = t2.product_class_id
+
+            <if test="shorts ==4">
+               order by t1.product_mall_price
+            </if>
+        </where>
+    </select>
+
+    <!--根据商品名称模糊查询-->
+    <select id="selectSomeLikeProduct" parameterType="map" resultMap="BaseResultMap">
+        select t1.*,t2.*
+        from lssg_product t1, lssg_product_class t2
+        <where>
+            <if test="productClassId !=null">
+                t1.product_class_id = #{productClassId}
+            </if>
+            <if test="query !=null">
+               and concat (t1.product_name) like "%${query}%"
+            </if>
+            and t1.product_class_id = t2.product_class_id
+            and t1.is_state = 0
+            and t2.product_is_show = 0
+        </where>
+    </select>
+
+    <resultMap id="countMap" type="com.lianwei.lssg.entity.CountEntity">
+        <id property="value" column="count"/>
+        <result property="name" column="name"/>
+        <result property="daytime" column="daytime"/>
+    </resultMap>
+
+    <select id="groupCountSelect" resultMap="countMap">
+        select t2.product_class_name as name ,count(*) as count
+        from lssg_product t1,lssg_product_class t2
+        where t1.product_class_id = t2.product_class_id
+        group by t1.product_class_id
+    </select>
+
+    <select id="countProduct" resultMap="countMap">
+        select t1.product_name as name,count(*) as count
+        from lssg_product t1, lssg_order_item t2,lssg_order_action t3
+        where t1.product_id = t2.product_id
+        and t2.order_id = t3.order_id
+        and t3.order_status &lt;&gt; 2
+        group by t2.product_id
+        order by t2.order_product_num desc
+        limit 10
+    </select>
+
+    <select id="countProductByOneWeek" resultMap="countMap" parameterType="int">
+        select a.date as daytime,ifnull(b.count,0) as count,b.name as name
+        from (SELECT @s :=@s + 1 as `index`, DATE(DATE_SUB(CURRENT_DATE, INTERVAL @s DAY)) AS `date`
+        FROM mysql.help_topic,(SELECT @s := -1) temp
+        WHERE @s &lt; 6
+        ORDER BY `date`) a left join (
+        select date(t4.do_order_time) as datatime,count(t2.product_id) as count,t3.product_class_name as name
+        from lssg_product t1, lssg_order_item t2,lssg_product_class t3,lssg_orders t4,lssg_order_action t5
+        where t1.product_id = t2.product_id
+        and t4.order_id = t2.order_id
+        and t5.order_id = t4.order_id
+        and t1.product_class_id = t3.product_class_id
+        and t1.product_class_id = #{classId}
+        and t5.order_status &lt;&gt; 2
+        group by date(t4.do_order_time)) b on a.date = b.datatime;
+    </select>
+
+    <!---->
+    <select id="selectSomeProductByQueryWithPage" resultMap="BaseResultMap" parameterType="map">
+        select t1.*,t2.*
+        from lssg_product t1,lssg_product_class t2
+        <where>
+            <if test="query !=null and query !=''">
+                concat(t1.product_name) like  "%${query}%"
+            </if>
+            and t1.is_state = 0
+            and t1.product_class_id = t2.product_class_id
+            and t2.product_is_show = 0
+        </where>
+    </select>
+
+</mapper>
+
+
+
+

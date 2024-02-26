@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.admin.LssgPublicInfoMapper">
+    <resultMap id="lssgPublicInfoMap" type="com.lianwei.lssg.entity.LssgPublicInfo">
+        <id property="publicInfoId" column="public_info_id"/>
+        <result property="publicInfoTitle" column="public_info_title"/>
+        <result property="publicInfoContent" column="public_info_content"/>
+        <result property="publicInfoImg" column="public_info_img"/>
+        <result property="publicInfoTime" column="public_info_time"/>
+        <result property="publicInfoState" column="public_info_state"/>
+        <result property="publicInfoUser" column="public_info_user"/>
+        <association property="lssgPublicClass" javaType="com.lianwei.lssg.entity.LssgPublicClass">
+            <id property="publicClassId" column="public_class_id"/>
+            <result property="publicClassName" column="public_class_name"/>
+            <result property="publicClassState" column="public_class_state"/>
+            <result property="publicDescription" column="public_description"/>
+            <result property="publicClassLocation" column="public_class_location"/>
+            <result property="publicClassImg" column="public_class_img"/>
+        </association>
+    </resultMap>
+    <!--新增一条公告信息-->
+    <insert id="addOnePublicInfo" parameterType="com.lianwei.lssg.entity.LssgPublicInfo">
+        insert into lssg_public_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="publicInfoId != null" >
+                public_info_id,
+            </if>
+            <if test="publicInfoTitle != null" >
+                public_info_title,
+            </if>
+            <if test="publicInfoContent != null" >
+                public_info_content,
+            </if>
+            <if test="publicInfoImg != null" >
+                public_info_img,
+            </if>
+            <if test="publicInfoTime != null" >
+                public_info_time,
+            </if>
+            <if test="publicInfoState != null" >
+                public_info_state,
+            </if>
+            <if test="publicInfoUser != null" >
+                public_info_user,
+            </if>
+            <if test="lssgPublicClass != null" >
+                <if test="lssgPublicClass.publicClassId != null">
+                    public_class_id
+                </if>
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="publicInfoId != null" >
+                #{publicInfoId,jdbcType=INTEGER},
+            </if>
+            <if test="publicInfoTitle != null" >
+                #{publicInfoTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="publicInfoContent != null" >
+                #{publicInfoContent,jdbcType=VARCHAR},
+            </if>
+            <if test="publicInfoImg != null" >
+                #{publicInfoImg,jdbcType=VARCHAR},
+            </if>
+
+            <if test="publicInfoTime != null" >
+                #{publicInfoTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="publicInfoState != null" >
+                #{publicInfoState,jdbcType=INTEGER},
+            </if>
+            <if test="publicInfoUser != null" >
+                #{publicInfoUser,jdbcType=VARCHAR},
+            </if>
+            <if test="lssgPublicClass != null" >
+                <if test="lssgPublicClass.publicClassId != null">
+                    #{lssgPublicClass.publicClassId,jdbcType=INTEGER}
+                </if>
+            </if>
+        </trim>
+    </insert>
+
+    <!--查询出所有公告信息-->
+    <select id="findAllPublicInfoWithPage" resultMap="lssgPublicInfoMap" parameterType="map">
+        select t1.* , t2.*
+        from lssg_public_class t1, lssg_public_info t2
+        <where>
+            <if test="publicInfoName != null and publicInfoName != ''">
+                t2.public_info_name =#{publicInfoName}
+            </if>
+            <if test="statTime != null and statTime != ''">
+                <if test="endTime != null and endTime != ''">
+                    and  t2.public_info_time between #{statTime} and #{endTime}
+                </if>
+            </if>
+            <if test="publicClassName != null and publicClassName != ''">
+               and t1.public_class_name =#{publicClassName}
+            </if>
+            and t1.public_class_id = t2.public_class_id
+        </where>
+        limit #{start},#{nums}
+    </select>
+
+    <!--查询满足条件总条数据-->
+    <select id="querySize" resultType="int" parameterType="map">
+        select count(*)
+        from lssg_public_class t1, lssg_public_info t2
+        <where>
+            <if test="publicInfoName != null and publicInfoName != ''">
+                t2.public_info_name =#{publicInfoName}
+            </if>
+            <if test="statTime != null and statTime != ''">
+                <if test="endTime != null and endTime != ''">
+                    and  t2.public_info_time between #{statTime} and #{endTime}
+                </if>
+            </if>
+            <if test="publicClassName != null and publicClassName != ''">
+                and t1.public_class_name =#{publicClassName}
+            </if>
+            and t1.public_class_id = t2.public_class_id
+        </where>
+    </select>
+
+    <!--启用、禁用公告信息-->
+    <update id="delOnePublicInfo" parameterType="map">
+        update lssg_public_info
+        set public_info_state = #{infoState}
+        where public_info_id = #{publicInfoId}
+    </update>
+
+    <!--删除一条公告信息-->
+    <delete id="delOnePublicInfoById" parameterType="INTEGER">
+        delete  from lssg_public_info
+        where public_info_id = #{publicInfoId}
+    </delete>
+
+    <!--批量删除-->
+    <delete id="deleteBatchStateByPrimaryKeySelective" parameterType="java.util.Arrays">
+        delete  from lssg_public_info
+        where public_info_id in
+        <foreach collection="array" index="index" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectOneById" resultMap="lssgPublicInfoMap">
+        select *
+        from lssg_public_info
+        where public_info_id = #{publicInfoId}
+    </select>
+
+    <!--跟新一条公告信息-->
+    <update id="updateOneById" parameterType="com.lianwei.lssg.entity.LssgPublicInfo">
+        update lssg_public_info
+        <set>
+            <if test="publicInfoTitle !=  null and publicInfoTitle !=''">
+                public_info_title = #{publicInfoTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="publicInfoContent !=null">
+                public_info_content = #{publicInfoContent,jdbcType=VARCHAR},
+            </if>
+            <if test="publicInfoTime != null">
+                public_info_time = #{publicInfoTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="publicInfoState != null">
+                public_info_state = #{publicInfoState,jdbcType=INTEGER},
+            </if>
+            <if test="publicInfoUser != null">
+                public_info_user = #{publicInfoUser,jdbcType=VARCHAR},
+            </if>
+
+            <if test="publicInfoImg != null and publicInfoImg != ''">
+                public_info_img = #{publicInfoImg,jdbcType=VARCHAR},
+            </if>
+            <if test="lssgPublicClass != null">
+                <if test="lssgPublicClass.publicClassId != null">
+                  public_class_id = #{lssgPublicClass.publicClassId,jdbcType=INTEGER}
+                </if>
+            </if>
+
+        </set>
+        where public_info_id = #{publicInfoId}
+    </update>
+
+    <!---->
+    <select id="findOneByClassId" resultMap="lssgPublicInfoMap" parameterType="map">
+        select t1.*,t2.*
+        from lssg_public_info t1,lssg_public_class t2
+        <where>
+            <if test="publicClassId !=null and publicClassId !=''">
+                t1.public_class_id = #{publicClassId}
+            </if>
+            <if test="publicInfoId !=null and publicInfoId !=''">
+                and t1.public_info_id = #{publicInfoId}
+            </if>
+            and t1.public_class_id = t2.public_class_id
+        </where>
+    </select>
+
+    <!---->
+    <select id="selectPublicClassByIdWithLimit" parameterType="INTEGER" resultMap="lssgPublicInfoMap">
+        select t1.*,t2.*
+        from lssg_public_class t1,lssg_public_info t2
+        where t1.public_class_id = t2.public_class_id
+        and t1.public_class_id = #{publicClassId}
+        order by t2.public_info_time desc
+        limit 6
+    </select>
+</mapper>
+
+
+
+
+

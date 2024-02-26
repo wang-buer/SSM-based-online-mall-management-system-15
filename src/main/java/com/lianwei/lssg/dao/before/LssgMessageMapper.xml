@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lianwei.lssg.dao.before.LssgMessageMapper">
+    <resultMap id="messageMap" type="com.lianwei.lssg.entity.LssgMessage">
+        <id property="messageId" column="message_id"/>
+        <result property="messageName" column="message_name"/>
+        <result property="messageEmail" column="message_email"/>
+        <result property="productStars" column="product_stars"/>
+        <result property="messageContent" column="message_content"/>
+        <result property="messageTime" column="message_time"/>
+        <result property="isShow" column="is_show"/>
+        <association property="lssgUserInfo" javaType="com.lianwei.lssg.entity.LssgUserInfo">
+            <id property="userInfoId" column="user_info_id"/>
+            <result property="userRealname" column="user_realname"/>
+            <result property="userSex" column="user_sex"/>
+            <result property="userTel" column="user_tel"/>
+            <result property="userEmail" column="user_email"/>
+            <result property="userImg" column="user_img"/>
+            <result property="userAddr" column="user_addr"/>
+        </association>
+        <association property="lssgUserLogin" javaType="com.lianwei.lssg.entity.LssgUserLogin">
+            <id property="userId" column="user_id"/>
+            <result property="userName" column="user_name"/>
+            <result property="userPwd" column="user_pwd"/>
+            <result property="loginIsActive" column="login_is_active"/>
+            <result property="registTime" column="regist_time"/>
+            <result property="lastTime" column="last_time"/>
+            <result property="userState" column="user_state"/>
+        </association>
+        <association property="lssgProduct" javaType="com.lianwei.lssg.entity.LssgProduct">
+            <id property="productId" column="product_id"/>
+            <result property="productName" column="product_name"/>
+        </association>
+        <!--<collection property="lssgReplyList" javaType="ArrayList"
+                    ofType="com.lianwei.lssg.entity.LssgReply" select="com.lianwei.lssg.dao.before.LssgReplyMapper.selectAllReplyByMessageId"
+                    fetchType="lazy" column="message_id">
+            <id property="replyId" column="reply_id"/>
+            <result property="replyName" column="reply_name"/>
+            <result property="replyEmail" column="reply_email"/>
+            <result property="replyTime" column="reply_time"/>
+            <result property="replyContent" column="reply_content"/>
+            <result property="replyIsShow" column="reply_is_show"/>
+        </collection>-->
+    </resultMap>
+    <!--新增一条评论-->
+    <insert id="insertOneMessage" parameterType="com.lianwei.lssg.entity.LssgMessage">
+        insert into lssg_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+
+            <if test="messageId != null">
+                message_id,
+            </if>
+            <if test="lssgUserLogin !=null">
+                <if test="lssgUserLogin.userId !=null">
+                    user_id,
+                </if>
+            </if>
+            <if test="lssgProduct !=null">
+                <if test="lssgProduct.productId !=null">
+                    product_id,
+                </if>
+            </if>
+            <if test="messageName != null">
+                message_name,
+            </if>
+            <if test="messageEmail != null">
+                message_email,
+            </if>
+            <if test="productStars != null">
+                product_stars,
+            </if>
+            <if test="messageContent != null">
+                message_content,
+            </if>
+            <if test="messageTime != null">
+                message_time,
+            </if>
+            <if test="isShow != null">
+                is_show,
+            </if>
+        </trim>
+
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="messageId != null">
+                #{messageId,jdbcType=INTEGER},
+            </if>
+
+            <if test="lssgUserLogin !=null">
+                <if test="lssgUserLogin.userId !=null">
+                    #{lssgUserLogin.userId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="lssgProduct !=null">
+                <if test="lssgProduct.productId !=null">
+                    #{lssgProduct.productId,jdbcType=INTEGER},
+                </if>
+            </if>
+            <if test="messageName != null">
+                #{messageName,jdbcType=VARCHAR},
+            </if>
+            <if test="messageEmail != null">
+                #{messageEmail,jdbcType=VARCHAR},
+            </if>
+            <if test="productStars != null">
+                #{productStars,jdbcType=VARCHAR},
+            </if>
+
+            <if test="messageContent != null">
+                #{messageContent,jdbcType=VARCHAR},
+            </if>
+            <if test="messageTime != null">
+                #{messageTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="isShow != null">
+                #{isShow,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <!--分页查询所有该商品下的评论-->
+    <select id="findMessageByProductId" parameterType="INTEGER" resultMap="messageMap">
+        select t1.*,t2.*,t3.*
+        from lssg_message t1,lssg_user_info t2,lssg_user_login t3
+        where t1.product_id = #{productId}
+        and t1.user_id = t2.user_id
+        and t1.user_id = t3.user_id
+        and t1.is_show = 0
+        order by t1.message_time desc
+    </select>
+
+    <!--<select id="selectMessageByProductId" parameterType="INTEGER" resultMap="com.lianwei.lssg.entity.LssgMessage">
+        select *
+        from lssg_message
+        where product_id = #{productId}
+        order by t1.message_time desc
+    </select>-->
+
+    <!--删除-->
+    <update id="updateOneMessageInfo" parameterType="Integer">
+        update lssg_message
+        set is_show = 1
+        where message_id = #{messageId}
+    </update>
+
+    <update id="changeStateMessage" parameterType="com.lianwei.lssg.entity.LssgMessage">
+        update lssg_message
+        <set>
+                is_show = #{isShow,jdbcType=INTEGER},
+        </set>
+        where message_id = #{messageId}
+    </update>
+
+
+    <!--查找所有的-->
+    <select id="selectAllMessage" resultMap="messageMap">
+        select t1.* ,t2.* t3.*
+        from lssg_message t1,lssg_user_login t2,lssg_user_info t3
+        where is_show = 0
+        and t1.user_id = t2.user_id
+        and t1.user_id = t3.user_id
+    </select>
+
+    <select id="querySize" resultType="int">
+        select count(*)
+        from lssg_message
+        where is_show = 0
+    </select>
+
+    <!---->
+    <select id="selectAllReplyInfoWithPage" resultMap="messageMap" parameterType="Integer">
+        select t1.*,t2.*,t3.*,t4.*,t5.product_id
+        from lssg_message t1,lssg_reply t2,lssg_user_login t3,lssg_user_info t4,lssg_product t5
+        where t1.message_id = t2.message_id
+        and t1.user_id = t3.user_id
+        and t1.user_id = t4.user_id
+        and t1.user_id = #{uid}
+        and t1.is_show = t2.reply_is_show
+        and t1.is_show = 0
+        and t1.product_id = t5.product_id
+        order by t2.reply_time desc
+    </select>
+
+
+    <!---->
+    <select id="selectMyMessage" resultMap="messageMap" parameterType="Integer">
+        select t1.*,t2.*,t3.*
+        from lssg_message t1,lssg_user_login t2,lssg_user_info t3
+        where t1.user_id = t2.user_id
+        and t1.user_id = #{userId}
+        and t1.user_id = t3.user_id
+    </select>
+
+    <!---->
+    <select id="selectOneMessageByMessageId" resultType="com.lianwei.lssg.entity.LssgMessage" parameterType="Integer">
+        select *
+        from lssg_message
+        where is_show = 0
+        and message_id = #{messageId}
+    </select>
+
+
+    <!--后台-->
+    <select id="query" resultMap="messageMap" parameterType="java.util.Map">
+        select t1.*,t2.*,t3.* ,t4.*
+        from lssg_message t1,lssg_user_login t2,lssg_user_info t3,lssg_product t4
+        <where>
+            <if test="query!=null and query!=''">
+                concat(t1.message_id,t1.message_name) like  "%${query}%"
+            </if>
+            and t1.user_id = t2.user_id
+            and t1.user_id = t3.user_id
+            and t1.product_id = t4.product_id
+        </where>
+        limit  #{start},#{nums};
+    </select>
+
+    <select id="querySize2" resultType="int" parameterType="java.util.Map">
+        select count(*)
+        from lssg_message t1,lssg_user_login t2,lssg_user_info t3,lssg_product t4
+        <where>
+            <if test="query!=null and query!=''">
+                concat(t1.message_id,t1.message_name) like  "%${query}%"
+            </if>
+            and t1.user_id = t2.user_id
+            and t1.user_id = t3.user_id
+            and t1.product_id = t4.product_id
+        </where>
+    </select>
+
+</mapper>
+
+
+
+
